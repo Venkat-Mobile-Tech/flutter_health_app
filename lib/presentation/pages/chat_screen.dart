@@ -19,46 +19,37 @@ class ChatScreen extends StatelessWidget {
         return Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16.0),
-                reverse: true,
-                itemCount: state.messages.length + (state.isLoading ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (state.isLoading && index == 0) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+              child: state.messages.isEmpty && !state.isLoading
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          const Icon(
+                            Icons.chat_bubble_outline,
+                            size: 64,
+                            color: AppTheme.systemMessageTextColor,
+                          ),
+                          const SizedBox(height: 16),
                           Container(
-                            constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.7,
-                            ),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16.0,
                               vertical: 10.0,
                             ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.systemMessageBackgroundColor,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
+                            child: const Column(
                               children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                  ),
-                                ),
-                                SizedBox(width: 8),
                                 Text(
-                                  'Typing...',
+                                  'No messages yet',
                                   style: TextStyle(
                                     color: AppTheme.systemMessageTextColor,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Start a conversation',
+                                  style: TextStyle(
+                                    color: AppTheme.systemMessageTextColor,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ],
@@ -66,47 +57,102 @@ class ChatScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    );
-                  }
-
-                  final messageIndex = state.isLoading ? index - 1 : index;
-                  final message =
-                      state.messages[state.messages.length - 1 - messageIndex];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      mainAxisAlignment: message.isUser
-                          ? MainAxisAlignment.end
-                          : MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.7,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 10.0,
-                          ),
-                          decoration: BoxDecoration(
-                            color: message.isUser
-                                ? AppTheme.userMessageBackgroundColor
-                                : AppTheme.systemMessageBackgroundColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            message.text,
-                            style: TextStyle(
-                              color: message.isUser
-                                  ? AppTheme.userMessageTextColor
-                                  : AppTheme.systemMessageTextColor,
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16.0),
+                      reverse: true,
+                      itemCount:
+                          state.messages.length + (state.isLoading ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (state.isLoading && index == 0) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth:
+                                        MediaQuery.of(context).size.width * 0.7,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 10.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppTheme.systemMessageBackgroundColor,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.white),
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Typing...',
+                                        style: TextStyle(
+                                          color:
+                                              AppTheme.systemMessageTextColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
+                          );
+                        }
+
+                        final messageIndex =
+                            state.isLoading ? index - 1 : index;
+                        final message = state
+                            .messages[state.messages.length - 1 - messageIndex];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Row(
+                            mainAxisAlignment: message.isUser
+                                ? MainAxisAlignment.end
+                                : MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.7,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 10.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: message.isUser
+                                      ? AppTheme.userMessageBackgroundColor
+                                      : AppTheme.systemMessageBackgroundColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  message.text,
+                                  style: TextStyle(
+                                    color: message.isUser
+                                        ? AppTheme.userMessageTextColor
+                                        : AppTheme.systemMessageTextColor,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -117,7 +163,7 @@ class ChatScreen extends StatelessWidget {
                     child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
                       decoration: BoxDecoration(
-                        color: AppTheme.chatInputBackgroundColor,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: TextField(
