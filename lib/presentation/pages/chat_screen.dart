@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../domain/entities/chat_message_entity.dart';
+
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
@@ -65,7 +68,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         width: 32,
                         height: 32,
                         decoration: const BoxDecoration(
-                          color: Color(0xFF353535),
+                          color: AppTheme.avatarColor,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -81,14 +84,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       decoration: BoxDecoration(
                         color:
                             message.isUser
-                                ? Colors.white
-                                : const Color(0xFF535254),
+                                ? AppTheme.userMessageBackgroundColor
+                                : AppTheme.systemMessageBackgroundColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         message.text,
                         style: TextStyle(
-                          color: message.isUser ? Colors.black : Colors.white,
+                          color:
+                              message.isUser
+                                  ? AppTheme.userMessageTextColor
+                                  : AppTheme.systemMessageTextColor,
                         ),
                       ),
                     ),
@@ -98,61 +104,43 @@ class _ChatScreenState extends State<ChatScreen> {
             },
           ),
         ),
-        Container(
-          decoration: const BoxDecoration(color: Colors.white),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF353535),
-                    shape: BoxShape.circle,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  decoration: BoxDecoration(
+                    color: AppTheme.chatInputBackgroundColor,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB4B4B4),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: 'Ask anything',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
-                        ),
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      hintText: 'Ask anything',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
                       ),
-                      onSubmitted: _handleSubmitted,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
                     ),
+                    onSubmitted: _handleSubmitted,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: () => _handleSubmitted(_controller.text),
-                ),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: () => _handleSubmitted(_controller.text),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
-}
-
-class ChatMessage {
-  final String text;
-  final bool isUser;
-
-  ChatMessage({required this.text, required this.isUser});
 }
