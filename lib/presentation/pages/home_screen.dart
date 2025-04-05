@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/dependency_injection/injection_container.dart';
+
 import '../../core/theme/app_theme.dart';
 import '../bloc/home_screen/home_screen_cubit.dart';
 import '../bloc/home_screen/home_screen_state.dart';
@@ -18,8 +20,8 @@ class HomeScreen extends StatelessWidget {
       body: Column(
         children: [
           const SizedBox(height: 40),
-          // Page Indicator
           BlocBuilder<HomeScreenCubit, HomeScreenState>(
+            bloc: serviceLocator<HomeScreenCubit>(),
             builder: (context, state) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -43,17 +45,16 @@ class HomeScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 20),
-          // Page View
           Expanded(
             child: PageView(
               controller: _pageController,
               onPageChanged: (index) {
-                context.read<HomeScreenCubit>().updatePage(index);
+                serviceLocator<HomeScreenCubit>().updatePage(index);
               },
-              children: const [
-                NavigationGuideScreen(type: ScreenType.left),
+              children: [
+                const NavigationGuideScreen(type: ScreenType.left),
                 ChatScreen(),
-                NavigationGuideScreen(type: ScreenType.right),
+                const NavigationGuideScreen(type: ScreenType.right),
               ],
             ),
           ),

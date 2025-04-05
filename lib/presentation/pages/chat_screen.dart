@@ -1,146 +1,159 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/dependency_injection/injection_container.dart';
 import '../../core/theme/app_theme.dart';
-import '../../domain/entities/chat_message_entity.dart';
+import '../bloc/chat_screen/chat_screen_cubit.dart';
+import '../bloc/chat_screen/chat_screen_state.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class ChatScreen extends StatelessWidget {
+  ChatScreen({super.key});
 
-  @override
-  State<ChatScreen> createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<ChatMessage> _messages = [];
-  final List<String> _systemResponses = [
-    'From your weekly food pattern,\nConsider reducing sugar rich\nfoods like Kesari bath',
-    'I noticed you walked 2000 steps today',
-    'Remember to stay hydrated!',
-    'Great progress on your health goals!',
-    'Consider taking a short break now',
-  ];
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleSubmitted(String text) {
-    if (text.isEmpty) return;
-
-    _controller.clear();
-    setState(() {
-      _messages.add(ChatMessage(text: text, isUser: true));
-
-      // Add random system response
-      final random = Random();
-      final response =
-          _systemResponses[random.nextInt(_systemResponses.length)];
-      _messages.add(ChatMessage(text: response, isUser: false));
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16.0),
-            reverse: true,
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
-              final message = _messages[_messages.length - 1 - index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Row(
-                  mainAxisAlignment:
-                      message.isUser
+    return BlocBuilder<ChatScreenCubit, ChatScreenState>(
+      bloc: serviceLocator<ChatScreenCubit>(),
+      builder: (context, state) {
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16.0),
+                reverse: true,
+                itemCount: state.messages.length + (state.isLoading ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (state.isLoading && index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Container(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.7,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 10.0,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.systemMessageBackgroundColor,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Typing...',
+                                  style: TextStyle(
+                                    color: AppTheme.systemMessageTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final messageIndex = state.isLoading ? index - 1 : index;
+                  final message =
+                      state.messages[state.messages.length - 1 - messageIndex];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      mainAxisAlignment: message.isUser
                           ? MainAxisAlignment.end
                           : MainAxisAlignment.start,
-                  children: [
-                    if (!message.isUser)
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.avatarColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    const SizedBox(width: 8),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.7,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 10.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            message.isUser
+                      children: [
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.7,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 10.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: message.isUser
                                 ? AppTheme.userMessageBackgroundColor
                                 : AppTheme.systemMessageBackgroundColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        message.text,
-                        style: TextStyle(
-                          color:
-                              message.isUser
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            message.text,
+                            style: TextStyle(
+                              color: message.isUser
                                   ? AppTheme.userMessageTextColor
                                   : AppTheme.systemMessageTextColor,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            children: [
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  decoration: BoxDecoration(
-                    color: AppTheme.chatInputBackgroundColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Ask anything',
-                      border: OutlineInputBorder(
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      decoration: BoxDecoration(
+                        color: AppTheme.chatInputBackgroundColor,
                         borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
+                      child: TextField(
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: 'Ask anything',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                        ),
+                        onSubmitted: (text) {
+                          serviceLocator<ChatScreenCubit>().sendMessage(text);
+                          _controller.clear();
+                        },
                       ),
                     ),
-                    onSubmitted: _handleSubmitted,
                   ),
-                ),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: () {
+                      serviceLocator<ChatScreenCubit>()
+                          .sendMessage(_controller.text);
+                      _controller.clear();
+                    },
+                  ),
+                ],
               ),
-              IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: () => _handleSubmitted(_controller.text),
-              ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
